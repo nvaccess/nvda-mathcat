@@ -4,11 +4,6 @@ on:
   workflow_dispatch:
 
 jobs:
-name: Fetch and Commit Assets
-
-on:
-  workflow_dispatch:  # Trigger manually from GitHub Actions UI
-jobs:
   fetch-and-commit-assets:
     runs-on: ubuntu-latest
 
@@ -37,4 +32,3 @@ jobs:
           git add .
           git commit -m "Add downloaded assets"
           git push
-
