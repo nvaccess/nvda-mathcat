@@ -24,8 +24,11 @@ jobs:
             if [[ "$ASSET_URL" != "null" ]]; then
               echo "Downloading $ASSET_NAME"
               curl -L -H "Accept: application/octet-stream" -o "$ASSET_NAME" "$ASSET_URL"
+              unzip -o "$ASSET_NAME" -d MathCAT
+              rm -f "$ASSET_NAME"
             else
               echo "Asset $ASSET_NAME not found in the latest release."
+              exit 1
             fi
           done
       - name: Commit and push downloaded assets
