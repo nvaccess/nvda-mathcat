@@ -3,6 +3,9 @@ name: Fetch Assets
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   fetch-and-commit-assets:
     runs-on: ubuntu-latest
