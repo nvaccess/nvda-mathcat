@@ -1,0 +1,40 @@
+name: Fetch Assets
+
+on:
+  workflow_dispatch:
+
+jobs:
+name: Fetch and Commit Assets
+
+on:
+  workflow_dispatch:  # Trigger manually from GitHub Actions UI
+jobs:
+  fetch-and-commit-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Fetch and download assets
+        run: |
+          REQUIRED_ASSETS='Rules.zip libmathcat_py-32-3.11-win.zip'
+          RELEASE_URL='https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest'
+          RELEASE_DATA=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
+
+          for ASSET_NAME in $REQUIRED_ASSETS; do
+            ASSET_URL=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
+            if [[ "$ASSET_URL" != "null" ]]; then
+              echo "Downloading $ASSET_NAME"
+              curl -L -H "Accept: application/octet-stream" -o "$ASSET_NAME" "$ASSET_URL"
+            else
+              echo "Asset $ASSET_NAME not found in the latest release."
+            fi
+          done
+      - name: Commit and push downloaded assets
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+          git commit -m "Add downloaded assets"
+          git push
+
