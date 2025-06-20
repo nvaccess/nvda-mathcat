@@ -25,11 +25,13 @@ jobs:
           echo "KEEP_FILES='*.py:yaml:logo.png'" >> $GITHUB_ENV
       - name: Download assets
         run: |
+          echo "REQUIRED_ASSETS=$REQUIRED_ASSETS"
           IFS=':' read -r -a REQUIRED_ASSETS <<< "$REQUIRED_ASSETS"
           RELEASE_URL='https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest'
           RELEASE_DATA=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
 
           for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
+            echo "ASSET_NAME=$ASSET_NAME"
             ASSET_URL=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
             if [[ "$ASSET_URL" != "null" ]]; then
               echo "Downloading $ASSET_NAME"
