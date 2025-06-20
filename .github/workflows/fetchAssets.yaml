@@ -21,8 +21,8 @@ jobs:
           sudo apt-get install -y jq
       - name: Set environment variables
         run: |
-          echo "REQUIRED_ASSETS='Rules.zip:libmathcat_py-32-3.11-win.zip'" >> $GITHUB_ENV
-          echo "KEEP_FILES='*.py:yaml:logo.png'" >> $GITHUB_ENV
+          echo "REQUIRED_ASSETS=Rules.zip:libmathcat_py-32-3.11-win.zip" >> $GITHUB_ENV
+          echo "KEEP_FILES=*.py:yaml:logo.png" >> $GITHUB_ENV
       - name: Download assets
         run: |
           echo "REQUIRED_ASSETS=$REQUIRED_ASSETS"
