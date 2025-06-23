@@ -30,7 +30,10 @@ jobs:
           RELEASE_DATA=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
 
           if [ ! -d assets ] ; then
+            echo 'Directory "assets" does not exist. Creating it.'
             mkdir assets
+          else
+            echo 'Directory "assets" exists.'
           fi
 
           for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
