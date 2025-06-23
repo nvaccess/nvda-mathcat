@@ -22,7 +22,6 @@ jobs:
       - name: Set environment variables
         run: |
           echo "REQUIRED_ASSETS=Rules.zip:libmathcat_py-32-3.11-win.zip" >> $GITHUB_ENV
-          echo "KEEP_FILES=*.py:yaml:logo.png" >> $GITHUB_ENV
       - name: Download assets
         run: |
           echo "REQUIRED_ASSETS=$REQUIRED_ASSETS"
@@ -41,27 +40,17 @@ jobs:
               exit 1
             fi
           done
-      - name: Clean up MathCAT directory
+      - name: Delete previously downloaded assets
         run: |
-          not_member_of() {
-            local filename=$(basename "$1"); shift
-            for pattern; do [[ "$filename" == $pattern ]] && return 1; done
-            return 0
-          }
-
-          IFS=':' read -r -a KEEP_FILES <<< "$KEEP_FILES"
-
-          for file in MathCAT/*; do
-            if not_member_of "$file" "${KEEP_FILES[@]}"; then
-              echo "Removing $file"
-              rm -rf "$file"
-            fi
+          for file in assets/*; do
+            echo "Removing $file"
+            rm -rf "$file"
           done
       - name: Unzip assets
         run: |
           IFS=':' read -r -a REQUIRED_ASSETS <<< "$REQUIRED_ASSETS"
           for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
-            unzip -o "$ASSET_NAME" -d MathCAT
+            unzip -o "$ASSET_NAME" -d assets
             rm -f "$ASSET_NAME"
           done
       - name: Commit and push downloaded assets
