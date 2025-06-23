@@ -63,6 +63,8 @@ jobs:
           done
       - name: Commit and push downloaded assets
         run: |
+          echo 'About to diff, commit, and push ...'
+          ls -r
           git diff --quiet && echo "No changes to commit" && exit 0
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
