@@ -29,6 +29,10 @@ jobs:
           RELEASE_URL='https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest'
           RELEASE_DATA=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
 
+          if [[ ! -d assets ]]; then
+            mkdir assets
+          fi
+
           for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
             echo "ASSET_NAME=$ASSET_NAME"
             ASSET_URL=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
