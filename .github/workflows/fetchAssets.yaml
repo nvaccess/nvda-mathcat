@@ -49,6 +49,7 @@ jobs:
           done
       - name: Delete previously downloaded assets
         run: |
+          shopt -s nullglob
           for file in assets/*; do
             echo "Removing $file"
             rm -rf "$file"
