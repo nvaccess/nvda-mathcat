@@ -65,6 +65,7 @@ jobs:
         run: |
           echo 'About to diff, commit, and push ...'
           ls -r
+          ls -r assets
           git diff --quiet && echo "No changes to commit" && exit 0
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
