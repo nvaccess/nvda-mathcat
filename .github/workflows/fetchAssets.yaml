@@ -59,3 +59,4 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git commit -m "Add downloaded assets"
           git push
+      
