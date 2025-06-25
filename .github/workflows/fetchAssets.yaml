@@ -40,7 +40,7 @@ jobs:
               continue
             fi
             echo "asset_name=$asset_name"
-            asset_url=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
+            asset_url=$(echo "$release_data" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
             if [[ "$asset_url" != "null" ]]; then
               echo "Downloading $asset_name"
               curl -L -H "Accept: application/octet-stream" -o "$asset_name" "asset_url"
@@ -59,4 +59,3 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git commit -m "Add downloaded assets"
           git push
-      
