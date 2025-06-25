@@ -15,10 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
       - name: Set environment variables
         run: |
           echo "REQUIRED_ASSETS=Rules.zip:libmathcat_py-32-3.11-win.zip" >> $GITHUB_ENV
