@@ -21,12 +21,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Delete previously downloaded assets
+        run: rm -rf assets/*
       - name: Download assets
         run: |
           echo "REQUIRED_ASSETS=$REQUIRED_ASSETS"
           release_data=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
 
-          if [ ! -d assets ] ; then
+          if [[ ! -d assets ]] ; then
             echo 'Directory "assets" does not exist. Creating it.'
             mkdir assets
           else
@@ -49,13 +51,6 @@ jobs:
             unzip -o "$asset_name" -d assets
             rm -f "$asset_name"
           done <<< "$REQUIRED_ASSETS"
-      - name: Delete previously downloaded assets
-        run: |
-          shopt -s nullglob
-          for file in assets/*; do
-            echo "Removing $file"
-            rm -rf "$file"
-          done
       - name: Commit and push downloaded assets
         run: |
           echo 'About to diff, commit, and push ...'
