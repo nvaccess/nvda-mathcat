@@ -53,10 +53,6 @@ jobs:
           done <<< "$REQUIRED_ASSETS"
       - name: Commit and push downloaded assets
         run: |
-          echo 'About to diff, commit, and push ...'
-          ls -r
-          ls -r assets
-          # git status
           git add assets
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git config --global user.name "github-actions"
