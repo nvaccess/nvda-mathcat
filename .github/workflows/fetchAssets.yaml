@@ -59,3 +59,14 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git commit -m "Add downloaded assets"
           git push
+      - name: Create issue in nvda repo using gh
+        env:
+          GH_TOKEN: ${{ secrets.NVDA_ISSUE_TOKEN }}
+        run: |
+          git diff --cached --quiet && echo "No asset changes; skipping issue creation." && exit 0
+
+          gh issue create \
+            --repo nvaccess/nvda \
+            --title "Reminder: Asset updates may be needed" \
+            --body "Assets were updated in the `nvda-mathcat` repo. Please verify and update the `nvda-mathcat` submodule if needed." \
+            --label "automation"
