@@ -12,64 +12,74 @@ jobs:
   fetch-and-commit-assets:
     runs-on: ubuntu-latest
 
+    env:
+      REQUIRED_ASSETS: |
+        Rules.zip
+        libmathcat_py-32-3.11-win.zip
+      RELEASE_URL: https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-      - name: Set environment variables
-        run: |
-          echo "REQUIRED_ASSETS=Rules.zip:libmathcat_py-32-3.11-win.zip" >> $GITHUB_ENV
+      - name: Delete previously downloaded assets
+        run: rm -rf assets/*
       - name: Download assets
         run: |
           echo "REQUIRED_ASSETS=$REQUIRED_ASSETS"
-          IFS=':' read -r -a REQUIRED_ASSETS <<< "$REQUIRED_ASSETS"
-          RELEASE_URL='https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest'
-          RELEASE_DATA=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
+          release_data=$(curl -s -H 'Accept: application/vnd.github.v3+json' "$RELEASE_URL")
 
-          if [ ! -d assets ] ; then
+          if [[ ! -d assets ]] ; then
             echo 'Directory "assets" does not exist. Creating it.'
             mkdir assets
           else
             echo 'Directory "assets" exists.'
           fi
 
-          for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
-            echo "ASSET_NAME=$ASSET_NAME"
-            ASSET_URL=$(echo "$RELEASE_DATA" | jq -r ".assets[] | select(.name == \"$ASSET_NAME\") | .url")
-            if [[ "$ASSET_URL" != "null" ]]; then
-              echo "Downloading $ASSET_NAME"
-              curl -L -H "Accept: application/octet-stream" -o "$ASSET_NAME" "$ASSET_URL"
+          while IFS= read -r asset_name; do
+            if [[ "$asset_name" =~ ^[[:space:]]*$ ]]; then
+              continue
+            fi
+            echo "asset_name=$asset_name"
+            asset_url=$(echo "$release_data" | jq -r ".assets[] | select(.name == \"$asset_name\") | .url")
+            if [[ "$asset_url" != "null" ]]; then
+              echo "Downloading $asset_name"
+              curl -L -H "Accept: application/octet-stream" -o "$asset_name" "$asset_url"
             else
-              echo "Asset $ASSET_NAME not found in the latest release."
+              echo "Asset $asset_name not found in the latest release."
               exit 1
             fi
-          done
-      - name: Delete previously downloaded assets
-        run: |
-          shopt -s nullglob
-          for file in assets/*; do
-            echo "Removing $file"
-            rm -rf "$file"
-          done
-      - name: Unzip assets
-        run: |
-          IFS=':' read -r -a REQUIRED_ASSETS <<< "$REQUIRED_ASSETS"
-          for ASSET_NAME in "${REQUIRED_ASSETS[@]}"; do
-            unzip -o "$ASSET_NAME" -d assets
-            rm -f "$ASSET_NAME"
-          done
+            unzip -o "$asset_name" -d assets
+            rm -f "$asset_name"
+          done <<< "$REQUIRED_ASSETS"
       - name: Commit and push downloaded assets
         run: |
-          echo 'About to diff, commit, and push ...'
-          ls -r
-          ls -r assets
-          # git status
           git add assets
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git commit -m "Add downloaded assets"
           git push
+      - name: Open PR to nvda repo
+        env:
+          GH_PUSH_TOKEN: ${{ secrets.NVDA_PUSH_TOKEN }}
+          GH_PR_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
+        run: |
+          git clone https://x-access-token:${GH_PUSH_TOKEN}@github.com/nvaccess/nvda.git
+          cd nvda
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          new_branch="update-mathcat-submodule-$(date +%Y-%m-%d_%H-%M-%S)"
+          git checkout -b "$new_branch"
+          cd include/nvda-mathcat
+          git pull origin main
+          cd ../..
+          git add include/nvda-mathcat
+          git diff --cached --quiet && echo 'No submodule updates; skipping PR.' && exit 0
+          git commit -m 'Update nvda-mathcat submodule'
+          git push origin "$new_branch"
+          gh auth login --with-token <<< "${GH_PR_TOKEN}"
+          gh pr create \
+            --title "Update nvda-mathcat submodule" \
+            --body "Automated update of the nvda-mathcat submodule with latest assets. Reminder: the changelog needs to be updated manually to reflect these changes." \
+            --head "$new_branch" \
+            --base master
