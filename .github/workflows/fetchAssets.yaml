@@ -86,4 +86,4 @@ jobs:
             --title "Update nvda-mathcat submodule" \
             --body "Automated update of the nvda-mathcat submodule with latest assets. Reminder: the changelog needs to be updated manually to reflect these changes." \
             --head "$new_branch" \
-            --base main
+            --base master
