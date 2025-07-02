@@ -61,9 +61,10 @@ jobs:
           git push
       - name: Open PR to nvda repo
         env:
-          GH_TOKEN: ${{ secrets.NVDA_PUSH_TOKEN }}
+          GH_PUSH_TOKEN: ${{ secrets.NVDA_PUSH_TOKEN }}
+          GH_PR_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/nvaccess/nvda.git
+          git clone https://x-access-token:${GH_PUSH_TOKEN}@github.com/nvaccess/nvda.git
           cd nvda
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
@@ -76,12 +77,7 @@ jobs:
           git diff --cached --quiet && echo 'No submodule updates; skipping PR.' && exit 0
           git commit -m 'Update nvda-mathcat submodule'
           git push origin "$new_branch"
-      - name: Create pull request
-        env:
-          GH_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
-        run: |
-          new_branch="update-mathcat-submodule-$(date +%Y-%m-%d_%H-%M-%S)"
-          gh auth login --with-token <<< "${GH_TOKEN}"
+          gh auth login --with-token <<< "${GH_PR_TOKEN}"
           gh pr create \
             --title "Update nvda-mathcat submodule" \
             --body "Automated update of the nvda-mathcat submodule with latest assets. Reminder: the changelog needs to be updated manually to reflect these changes." \
