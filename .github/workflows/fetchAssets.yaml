@@ -59,14 +59,30 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git commit -m "Add downloaded assets"
           git push
-      - name: Create issue in nvda repo using gh
+      - name: Open PR to nvda repo
         env:
-          GH_TOKEN: ${{ secrets.NVDA_ISSUE_TOKEN }}
+          GH_TOKEN: ${{ secrets.NVDA_PUSH_TOKEN }}
         run: |
-          git diff --cached --quiet && echo "No asset changes; skipping issue creation." && exit 0
-
-          gh issue create \
-            --repo nvaccess/nvda \
-            --title "Reminder: Asset updates may be needed" \
-            --body "Assets were updated in the `nvda-mathcat` repo. Please verify and update the `nvda-mathcat` submodule if needed." \
-            --label "automation"
+          git clone https://x-access-token:${GH_TOKEN}@github.com/nvaccess/nvda.git
+          cd nvda
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          new_branch="update-mathcat-submodule-$(date +%Y-%m-%d_%H-%M-%S)"
+          git checkout -b "$new_branch"
+          cd include/nvda-mathcat
+          git pull origin main
+          cd ../..
+          git add include/nvda-mathcat
+          git diff --cached --quiet && echo 'No submodule updates; skipping PR.' && exit 0
+          git commit -m 'Update nvda-mathcat submodule'
+          git push origin "$new_branch"
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
+        run: |
+          gh auth login --with-token <<< "${GH_TOKEN}"
+          gh pr create \
+            --title "Update nvda-mathcat submodule" \
+            --body "Automated update of the nvda-mathcat submodule with latest assets. Reminder: the changelog needs to be updated manually to reflect these changes." \
+            --head "$new_branch" \
+            --base main
