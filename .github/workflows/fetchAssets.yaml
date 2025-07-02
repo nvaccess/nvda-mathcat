@@ -80,6 +80,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
         run: |
+          new_branch="update-mathcat-submodule-$(date +%Y-%m-%d_%H-%M-%S)"
           gh auth login --with-token <<< "${GH_TOKEN}"
           gh pr create \
             --title "Update nvda-mathcat submodule" \
