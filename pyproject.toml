@@ -1,6 +1,6 @@
 [project]
 name = "nvda-mathcat"
-version = "20250706"
+version = "20250714"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 
