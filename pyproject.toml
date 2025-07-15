@@ -13,5 +13,5 @@ requires = ["setuptools~=72.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "python"}
+package-dir = {"" = "assets"}
 include-package-data = true
