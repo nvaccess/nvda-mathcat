@@ -51,8 +51,9 @@ jobs:
             unzip -o "$asset_name" -d assets
             rm -f "$asset_name"
           done <<< "$REQUIRED_ASSETS"
-      - Extract nested zip files inside Rules directory
-        find assets/Rules -type f -name '*.zip' -print0 \
+      - name: Extract nested zip files inside Rules directory
+        run: |
+          find assets/Rules -type f -name '*.zip' -print0 \
           | xargs -0 -I {} sh -c 'unzip "{}" -d "$(dirname "{}")" && rm -f "{}"'
       - name: Commit and push downloaded assets
         run: |
@@ -67,22 +68,46 @@ jobs:
           GH_PUSH_TOKEN: ${{ secrets.NVDA_PUSH_TOKEN }}
           GH_PR_TOKEN: ${{ secrets.NVDA_PR_TOKEN }}
         run: |
-          git clone https://x-access-token:${GH_PUSH_TOKEN}@github.com/nvaccess/nvda.git
+          # Authenticate with GitHub CLI
+          gh auth login --with-token <<< "${GH_PUSH_TOKEN}"
+          # Get the fork owner (the authenticated user/organization)
+          fork_owner=$(gh api user --jq '.login')
+
+          # Clone the fork
+          git clone https://x-access-token:${GH_PUSH_TOKEN}@github.com/${fork_owner}/nvda.git
           cd nvda
+
+          # Configure git
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
+
+          # Add upstream remote
+          git remote add upstream https://github.com/nvaccess/nvda.git
+
+          # Fetch latest changes from upstream
+          git fetch upstream master
+
+          # Create new branch for our changes
           new_branch="update-mathcat-submodule-$(date +%Y-%m-%d_%H-%M-%S)"
-          git checkout -b "$new_branch"
+          git checkout -b "$new_branch" upstream/master
+
+          # Update the submodule
           cd include/nvda-mathcat
           git pull origin main
           cd ../..
           git add include/nvda-mathcat
+
+          # Check if there are any changes to commit
           git diff --cached --quiet && echo 'No submodule updates; skipping PR.' && exit 0
+
+          # Commit and push to fork
           git commit -m 'Update nvda-mathcat submodule'
           git push origin "$new_branch"
-          gh auth login --with-token <<< "${GH_PR_TOKEN}"
+
+          # Create PR from fork to upstream
           gh pr create \
+            --repo nvaccess/nvda \
             --title "Update nvda-mathcat submodule" \
             --body "Automated update of the nvda-mathcat submodule with latest assets. Reminder: the changelog needs to be updated manually to reflect these changes." \
-            --head "$new_branch" \
+            --head "${fork_owner}:${new_branch}" \
             --base master
