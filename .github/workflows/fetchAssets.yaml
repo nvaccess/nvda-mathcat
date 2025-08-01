@@ -51,8 +51,7 @@ jobs:
             unzip -o "$asset_name" -d assets
             rm -f "$asset_name"
           done <<< "$REQUIRED_ASSETS"
-      - name: Extract nested zip files inside Rules directory
-        run: |
+          # Extract nested zip files inside Rules directory
           find assets/Rules -type f -name '*.zip' -print0 \
           | xargs -0 -I {} sh -c 'unzip "{}" -d "$(dirname "{}")" && rm -f "{}"'
       - name: Commit and push downloaded assets
