@@ -91,6 +91,8 @@ jobs:
           git checkout -b "$new_branch" upstream/master
 
           # Update the submodule
+          git submodule sync --recursive
+          git submodule update --init --recursive
           cd include/nvda-mathcat
           git pull origin main
           cd ../..
