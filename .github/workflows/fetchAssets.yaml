@@ -15,7 +15,7 @@ jobs:
     env:
       REQUIRED_ASSETS: |
         Rules.zip
-        libmathcat_py-32-3.11-win.zip
+        libmathcat_py-64-3.11-win.zip
       RELEASE_URL: https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest
 
     steps:
