@@ -16,7 +16,7 @@ jobs:
       REQUIRED_ASSETS: |
         Rules.zip
         libmathcat_py-64-3.13-win.zip
-      RELEASE_URL: https://api.github.com/repos/NSoiffer/MathCATForPython/releases/latest
+      RELEASE_URL: https://api.github.com/repos/daisy/MathCATForPython/releases/latest
 
     steps:
       - name: Checkout repository
